@@ -1,3 +1,7 @@
+# TradeStation API
+
+`pip install -r requirements.txt`
+
 Congratulations! Your Web API key has been approved.
 To get started, review our latest API documentation. Post your questions in the WebAPI Developer Support Forum. (If you haven’t signed up for our forums, you can do so here.)
 Your first step will be to get authenticated. A video guide to the authentication process is provided at the link below. Additional documentation of the authentication process is available at the second link, below.

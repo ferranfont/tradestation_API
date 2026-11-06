@@ -1,0 +1,273 @@
+# =============================================================================
+#  requirements.txt - Librerias para trading algoritmico (Python 3.12)
+# -----------------------------------------------------------------------------
+#  Instalar todo:          pip install -r requirements.txt
+#  Recomendado: en un entorno virtual:
+#      python -m venv .venv
+#      .venv\Scripts\activate
+#      pip install -r requirements.txt
+#
+#  Son muchas librerias y algunas son pesadas (torch, prophet, nautilus...).
+#  Si alguna da conflicto, comentala con "#" e instala el resto.
+#  Las lineas que empiezan por "# " con un paquete son opcionales: descomentalas
+#  si las necesitas (ver nota en cada una).
+#
+#  NOTA: "webbrowser", "json", "datetime", "http.server", "asyncio", "sqlite3",
+#  "csv", "math", "statistics", "logging" son de la libreria estandar de Python:
+#  no se instalan con pip.
+# =============================================================================
+
+
+# ----------------------------------------------------------------------------
+# 1. Nucleo: datos, calculo numerico y utilidades
+# ----------------------------------------------------------------------------
+numpy
+pandas
+scipy
+polars                  # DataFrames muy rapidos (alternativa a pandas)
+pyarrow                 # Parquet / Arrow, columnar
+numba                   # JIT: acelera bucles numericos (backtests a mano)
+python-dotenv           # Leer el .env (API keys)
+requests
+httpx                   # HTTP sync/async moderno
+aiohttp                 # HTTP asincrono
+websockets              # Streams en tiempo real (asyncio)
+websocket-client        # Streams en tiempo real (sincrono)
+tenacity                # Reintentos automaticos ante errores de red / 429
+pydantic                # Validacion de datos / modelos
+orjson                  # JSON ultrarrapido
+pytz
+python-dateutil
+tzdata
+
+
+# ----------------------------------------------------------------------------
+# 2. Calendarios de mercado y festivos
+# ----------------------------------------------------------------------------
+pandas-market-calendars # Horarios/festivos NYSE, CME, CBOE, EUREX...
+exchange-calendars      # Calendarios de +50 bolsas
+holidays                # Festivos por pais
+
+
+# ----------------------------------------------------------------------------
+# 3. Brokers y APIs de datos de mercado
+# ----------------------------------------------------------------------------
+ib_async                # Interactive Brokers (sucesor de ib_insync)
+alpaca-py               # Alpaca
+ccxt                    # +100 exchanges de cripto
+yfinance                # Yahoo Finance
+massive                 # Massive (antes Polygon.io)
+databento               # Datos tick / order book institucionales
+fmpsdk                  # Financial Modeling Prep
+alpha_vantage
+fredapi                 # Datos macro de la Reserva Federal (FRED)
+pandas-datareader       # FRED, Stooq, Banco Mundial, etc.
+nasdaq-data-link        # Antes Quandl
+finnhub-python
+oandapyV20              # OANDA (forex)
+MetaTrader5             # MT5 (solo Windows)
+edgartools              # Filings de la SEC (10-K, 10-Q, 13F, insiders)
+# polygon-api-client    # Cliente antiguo de Polygon (ahora "massive")
+# ibapi                 # NO usar el de PyPI (version vieja 9.81). La API oficial
+#                       # de IB se descarga de interactivebrokers.github.io
+# tvdatafeed            # No esta en PyPI. Instalar desde GitHub:
+#                       # pip install git+https://github.com/rongardF/tvdatafeed
+
+
+# ----------------------------------------------------------------------------
+# 4. Analisis tecnico (indicadores)
+# ----------------------------------------------------------------------------
+TA-Lib                  # El clasico (+150 indicadores, en C, muy rapido)
+pandas-ta               # Indicadores integrados en pandas (df.ta.rsi())
+ta                      # Technical Analysis Library
+finta                   # Financial Technical Analysis
+stockstats
+
+
+# ----------------------------------------------------------------------------
+# 5. Backtesting y motores de trading
+# ----------------------------------------------------------------------------
+backtrader              # Backtesting orientado a eventos
+backtesting             # backtesting.py: simple y con graficos interactivos
+vectorbt                # Backtesting vectorizado ultrarrapido
+bt                      # Backtesting de carteras / asignacion de activos
+nautilus_trader         # Motor profesional (Rust) backtest + live
+lumibot                 # Backtest + live con varios brokers
+lib-pybroker            # PyBroker: backtesting con machine learning
+zipline-reloaded        # Zipline (motor de Quantopian)
+
+
+# ----------------------------------------------------------------------------
+# 6. Metricas de rendimiento y riesgo
+# ----------------------------------------------------------------------------
+quantstats              # Informes HTML tipo tearsheet (Sharpe, drawdown...)
+pyfolio-reloaded        # Tearsheets de carteras
+empyrical-reloaded      # Metricas de riesgo/retorno
+alphalens-reloaded      # Analisis de factores alpha
+ffn                     # Funciones financieras de rendimiento
+
+
+# ----------------------------------------------------------------------------
+# 7. Opciones: pricing, IV y griegas
+# ----------------------------------------------------------------------------
+py_vollib               # Black-Scholes / Black-76, IV y griegas
+py_vollib_vectorized    # Version vectorizada (cadenas completas)
+QuantLib                # Libreria cuantitativa de referencia (opciones, bonos, curvas)
+mibian                  # Black-Scholes sencillo
+
+
+# ----------------------------------------------------------------------------
+# 8. Optimizacion de carteras
+# ----------------------------------------------------------------------------
+PyPortfolioOpt          # Markowitz, Black-Litterman, HRP
+riskfolio-lib           # Optimizacion de riesgo avanzada (CVaR, HRP, HERC...)
+skfolio                 # Optimizacion de carteras estilo scikit-learn
+cvxpy                   # Optimizacion convexa
+
+
+# ----------------------------------------------------------------------------
+# 9. Estadistica, econometria y series temporales
+# ----------------------------------------------------------------------------
+statsmodels             # ARIMA, regresiones, cointegracion, tests ADF
+arch                    # Modelos GARCH (volatilidad)
+pmdarima                # auto-ARIMA
+linearmodels            # Paneles, IV, Fama-MacBeth
+hmmlearn                # Hidden Markov Models (regimenes de mercado)
+filterpy                # Filtros de Kalman
+ruptures                # Deteccion de cambios de regimen
+stumpy                  # Matrix profile (patrones / anomalias)
+tsfresh                 # Extraccion automatica de features de series
+sktime                  # ML para series temporales
+aeon                    # ML para series temporales (fork de sktime)
+tslearn                 # Clustering / DTW de series
+pyts                    # Clasificacion de series (GAF, recurrence plots)
+darts                   # Forecasting (clasico + deep learning)
+prophet                 # Forecasting de Meta
+statsforecast           # Forecasting estadistico rapido (Nixtla)
+neuralforecast          # Forecasting con redes neuronales (Nixtla)
+tsai                    # Deep learning para series temporales
+# ts2vec                # Representaciones de series (TS2Vec). El paquete de PyPI
+#                       # no es el oficial; mejor clonar el repo original:
+#                       # git clone https://github.com/zhihanyue/ts2vec
+
+
+# ----------------------------------------------------------------------------
+# 10. Machine learning y deep learning
+# ----------------------------------------------------------------------------
+scikit-learn
+xgboost
+lightgbm
+catboost
+torch                   # PyTorch (para GPU ver https://pytorch.org)
+keras
+optuna                  # Optimizacion de hiperparametros / parametros de estrategias
+shap                    # Explicabilidad de modelos
+mlflow                  # Registro de experimentos
+gymnasium               # Entornos de reinforcement learning
+stable-baselines3       # Algoritmos de RL (PPO, A2C, DQN...)
+# tensorflow            # Muy pesado; descomentar solo si lo necesitas
+# finrl                 # RL para finanzas; dependencias antiguas, instalar aparte
+
+
+# ----------------------------------------------------------------------------
+# 11. IA / LLMs (Claude, ChatGPT, agentes)
+# ----------------------------------------------------------------------------
+anthropic               # API de Claude
+claude-agent-sdk        # SDK de agentes de Claude
+openai                  # API de ChatGPT / GPT
+google-genai            # API de Gemini
+mcp                     # Model Context Protocol (servidores/herramientas)
+langchain
+langchain-anthropic
+langchain-openai
+langgraph               # Agentes con grafos de estados
+llama-index             # RAG sobre documentos (informes, filings)
+tiktoken                # Contar tokens
+transformers            # Modelos de Hugging Face (p. ej. FinBERT)
+sentence-transformers   # Embeddings de texto
+chromadb                # Base de datos vectorial
+# NOTA: Codex (OpenAI) y Claude Code son herramientas de linea de comandos
+# que se instalan con npm, no con pip:
+#   npm install -g @openai/codex
+#   npm install -g @anthropic-ai/claude-code
+
+
+# ----------------------------------------------------------------------------
+# 12. Noticias, sentimiento y scraping
+# ----------------------------------------------------------------------------
+vaderSentiment          # Sentimiento de textos cortos
+nltk
+textblob
+feedparser              # RSS de noticias
+beautifulsoup4
+lxml
+selenium
+playwright              # Tras instalar: playwright install
+
+
+# ----------------------------------------------------------------------------
+# 13. Visualizacion y dashboards
+# ----------------------------------------------------------------------------
+matplotlib
+seaborn
+plotly
+mplfinance              # Velas japonesas con matplotlib
+lightweight-charts      # Graficos tipo TradingView
+finplot                 # Graficos financieros rapidos (pyqtgraph)
+pyqtgraph
+bokeh
+altair
+dash                    # Dashboards web con Plotly
+streamlit               # Apps / dashboards rapidos
+kaleido                 # Exportar graficos de Plotly a PNG/PDF
+
+
+# ----------------------------------------------------------------------------
+# 14. Almacenamiento y bases de datos
+# ----------------------------------------------------------------------------
+duckdb                  # SQL analitico sobre Parquet/CSV (ideal para ticks)
+arcticdb                # Base de datos de series temporales (Man Group)
+sqlalchemy
+psycopg[binary]         # PostgreSQL / TimescaleDB
+redis
+tables                  # HDF5
+fastparquet
+openpyxl                # Excel
+xlsxwriter
+
+
+# ----------------------------------------------------------------------------
+# 15. Automatizacion, alertas y servicios
+# ----------------------------------------------------------------------------
+apscheduler             # Programar tareas (cron dentro de Python)
+schedule
+fastapi                 # APIs / webhooks (p. ej. alertas de TradingView)
+uvicorn
+python-telegram-bot     # Alertas por Telegram
+pyzmq                   # Mensajeria entre procesos
+nest-asyncio            # asyncio dentro de Jupyter
+pyyaml                  # Ficheros de configuracion
+typer                   # CLIs para tus scripts
+joblib                  # Paralelizar / cachear
+dask                    # Computacion paralela sobre DataFrames grandes
+
+
+# ----------------------------------------------------------------------------
+# 16. Entorno de trabajo, notebooks y logging
+# ----------------------------------------------------------------------------
+jupyterlab
+ipykernel
+ipywidgets
+tqdm                    # Barras de progreso
+rich                    # Salida bonita en terminal (tablas, colores)
+loguru                  # Logging sencillo
+
+
+# ----------------------------------------------------------------------------
+# 17. Calidad de codigo y tests
+# ----------------------------------------------------------------------------
+pytest
+ruff                    # Linter + formateador
+black
+mypy
+pre-commit

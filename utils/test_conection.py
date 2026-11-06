@@ -35,7 +35,7 @@ AUTH_URL = "https://signin.tradestation.com/authorize"
 TOKEN_URL = "https://signin.tradestation.com/oauth/token"
 API_BASE = "https://api.tradestation.com/v3"
 REDIRECT_URI = "http://localhost:3000"
-SCOPES = "openid offline_access profile MarketData ReadAccount"
+SCOPES = "openid offline_access profile MarketData ReadAccount OptionSpreads"
 
 SYMBOL = "BA"
 
