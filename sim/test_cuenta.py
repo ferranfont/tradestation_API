@@ -1,11 +1,17 @@
 """
-Estado de la cuenta SIM en tablas: saldo, posiciones y ordenes.
+Estado de una cuenta en tablas: saldo, posiciones y ordenes. Solo lectura.
 
-Uso:  python sim/test_cuenta.py
+Uso:
+    python sim/test_cuenta.py                       # SIM (cuenta del .env)
+    python sim/test_cuenta.py --real                # REAL (cuenta del .env)
+    python sim/test_cuenta.py --real --cuenta TSE01900
 """
 
-from cuenta import foto
-from ts_sim import Sim
+import argparse
+from datetime import datetime
+
+from cuenta import cotizacion, foto
+from ts_broker import args_modo, broker_desde_args
 
 
 def tabla(titulo: str, filas: list[dict], columnas: list[tuple[str, str]]):
@@ -22,9 +28,12 @@ def tabla(titulo: str, filas: list[dict], columnas: list[tuple[str, str]]):
 
 
 def main():
-    f = foto(Sim())
-    print(f"Cuenta {f['cuenta']} ({f['tipo']})  |  {f['hora']}")
-    c = f["cotizacion"]
+    ap = argparse.ArgumentParser()
+    args_modo(ap)
+    b = broker_desde_args(ap.parse_args())
+    f = foto(b)
+    print(f"Cuenta {f['cuenta']} ({f['tipo']})  |  {datetime.now():%Y-%m-%d %H:%M:%S}")
+    c = cotizacion(b)
     print(f"{c['simbolo']}: Last {c['last']}  Bid {c['bid']}  Ask {c['ask']}  Retrasado {c['retrasado']}")
 
     tabla("Saldo", [{"campo": k, "valor": v} for k, v in f["saldo"].items()],

@@ -1,5 +1,5 @@
 """
-Comprueba si se puede operar cada tipo de activo en las cuentas SIM.
+Comprueba si se puede operar cada tipo de activo en las cuentas SIM. Solo SIM.
 
 Por defecto solo valida (orderconfirm): no envia nada.
 Con --enviar manda de verdad cada orden, lejos del mercado, y la cancela al momento.
@@ -14,14 +14,14 @@ import sys
 from datetime import date, timedelta
 
 from lanzar_orden import ver_orden
-from ts_sim import ACCOUNT, Sim
+from ts_broker import Broker
 
 CUENTA_FUTUROS = "SIM3347849F"   # las cuentas Margin no operan futuros
 FUTURO = "ESZ26"
 SUBYACENTE_OPCION = "SPY"
 
 
-def opcion_otm(sim: Sim) -> str:
+def opcion_otm(sim: Broker) -> str:
     """Call de SPY un 5% fuera del dinero, con al menos una semana de vida."""
     r = sim.get(f"/marketdata/options/expirations/{SUBYACENTE_OPCION}")
     r.raise_for_status()
@@ -37,7 +37,8 @@ def opcion_otm(sim: Sim) -> str:
 
 
 def casos() -> list[tuple]:
-    margen, futuros = Sim(), Sim(CUENTA_FUTUROS)
+    margen = Broker("sim", operar=True)
+    futuros = Broker("sim", CUENTA_FUTUROS, operar=True)
     spy = float(margen.quote("SPY")["Bid"])
     es = float(futuros.quote(FUTURO)["Last"])
     opcion = opcion_otm(margen)

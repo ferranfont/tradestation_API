@@ -2,23 +2,26 @@
 <html lang="es"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cuenta SIM — TradeStation</title>
+<title>Cuentas — TradeStation</title>
 <!-- Plantilla: la rellena dashboard.py. No abrir esta, sino sim_dashboard.html. -->
 <style>
-  /* CSS copiado de break_even_iron_condor/Expected move/expected_move_plantilla.html */
+  /* CSS base copiado de break_even_iron_condor/Expected move/expected_move_plantilla.html */
   :root {
     color-scheme: dark;
     --bg:#05080d; --card:#0b0f16; --line:#1c2431; --text:#dbeafe;
     --muted:#7c8aa0; --text2:#a8b8cc;
     --cyan:#22d3ee; --cone:#fab219;
-    --bad:#d03b3b; --at:#e3ff33;
+    --bad:#d03b3b; --at:#e3ff33; --real:#22c55e;
+    --modo:var(--cone);            /* color del modo activo: ambar SIM, verde REAL */
   }
+  body.real { --modo:var(--real); }
   * { box-sizing:border-box; }
   html, body { height:100%; margin:0; }
   body {
     background:var(--bg); color:var(--text);
     font-family:system-ui,-apple-system,"Segoe UI",sans-serif; font-size:13px;
     display:flex; flex-direction:column; overflow:hidden;
+    border-top:4px solid var(--modo);
   }
   .topbar {
     display:flex; align-items:center; gap:8px; flex-wrap:wrap;
@@ -26,20 +29,40 @@
   }
   .brand-market { font-size:15px; color:var(--text2); }
   .brand-market b { color:var(--cyan); font-weight:700; font-variant-numeric:tabular-nums; font-size:20px; }
-  #at { font-size:19px; color:var(--at); font-weight:700; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  #at { font-size:15px; color:var(--muted); white-space:nowrap; font-variant-numeric:tabular-nums; }
   .grow { flex:1; }
-  .etq { color:var(--muted); font-size:11px; letter-spacing:.04em; }
-  .grupo { display:flex; align-items:center; gap:6px; }
   .box-prima { background:var(--at); color:var(--bg); font-size:15px; font-weight:700; border-radius:6px; padding:3px 10px;
                white-space:nowrap; font-variant-numeric:tabular-nums; }
   .box-prima small { font-size:11px; font-weight:600; opacity:.75; margin-left:6px; }
+
+  /* Conmutador SIM / REAL */
+  .switch { display:flex; gap:3px; padding:3px; border:2px solid var(--modo); border-radius:999px; background:var(--bg); }
+  .switch button {
+    font:700 14px system-ui,-apple-system,"Segoe UI",sans-serif; letter-spacing:.08em;
+    padding:6px 18px; border:0; border-radius:999px; background:transparent; color:var(--muted); cursor:pointer;
+  }
+  .switch button:hover { color:var(--text); }
+  .switch button.on[data-modo=sim] { background:var(--cone); color:var(--bg); }
+  .switch button.on[data-modo=real] { background:var(--real); color:var(--bg); }
+  .banda {
+    text-align:center; font-weight:800; letter-spacing:.12em; font-size:13px; padding:5px;
+    background:rgba(250,178,25,.12); color:var(--cone); border-bottom:1px solid rgba(250,178,25,.4);
+  }
+  body.real .banda { background:var(--real); color:var(--bg); border-color:var(--real); }
+
+  .tabs { display:flex; gap:6px; flex-wrap:wrap; padding:8px 13px 0; }
+  .tabs button {
+    font:600 12.5px system-ui,-apple-system,"Segoe UI",sans-serif; font-variant-numeric:tabular-nums;
+    border:1px solid var(--line); border-radius:6px; padding:5px 11px; background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .tabs button small { color:var(--muted); font-weight:500; margin-left:5px; }
+  .tabs button.on { border-color:var(--modo); color:var(--text); box-shadow:inset 0 -2px 0 var(--modo); }
   .chips { display:flex; gap:8px; flex-wrap:wrap; padding:8px 13px; border-bottom:1px solid var(--line); }
   .chip {
     border:1px solid var(--line); border-radius:6px; padding:4px 9px; color:var(--text2);
     font-variant-numeric:tabular-nums; white-space:nowrap;
   }
   .chip b { color:var(--text); font-weight:700; }
-  .chip.aviso { border-color:rgba(250,178,25,.55); color:var(--cone); white-space:normal; }
   #vStats { flex:1; min-height:0; overflow:auto; padding:12px 13px 30px; }
   .ratios { display:grid; grid-template-columns:1fr 1fr; gap:0 18px; margin-top:6px; }
   .ratio { display:flex; justify-content:space-between; gap:10px; padding:4px 0; border-bottom:1px solid rgba(28,36,49,.6); }
@@ -54,6 +77,7 @@
   .panel { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:9px 11px; min-width:0; margin-bottom:12px; }
   .panel h3 { margin:0 0 2px; font-size:13px; font-weight:600; }
   .panel p { margin:0 0 4px; color:var(--muted); font-size:11.5px; line-height:1.4; }
+  .panel.error { border-color:var(--bad); color:#ff6b6b; }
   table { border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums; }
   th { color:var(--muted); font-weight:500; font-size:11.5px; text-align:right; padding:5px 8px;
        border-bottom:1px solid var(--line); white-space:nowrap; position:sticky; top:0; background:var(--card); }
@@ -66,23 +90,32 @@
   .vacio { color:var(--muted); padding:10px 2px; }
   .pie { color:var(--muted); font-size:11.5px; margin-top:10px; line-height:1.5; }
 </style></head>
-<body>
+<body class="sim">
 <div class="topbar">
-  <span class="brand-market">EQUITY <b id="hEquity"></b></span>
+  <div class="switch" role="tablist" aria-label="Modo">
+    <button data-modo="sim" role="tab">SIMULACIÓN</button>
+    <button data-modo="real" role="tab">REAL</button>
+  </div>
   <span class="grow"></span>
-  <span id="at"></span>
+  <span class="brand-market">EQUITY <b id="hEquity"></b></span>
   <span class="box-prima" id="boxPnl" title="Ganancia o pérdida de hoy"></span>
   <span class="grow"></span>
-  <span class="grupo"><span class="etq">CUENTA</span><span id="hCuenta"></span></span>
+  <span id="at"></span>
 </div>
+<div class="banda" id="banda"></div>
+<div class="tabs" id="tabs"></div>
 <div class="chips" id="chips"></div>
 
 <div id="vStats">
-  <div class="kpis" id="kpis"></div>
-  <div class="panel"><h3>Saldo</h3><div class="ratios" id="ratios"></div></div>
-  <div class="panel"><h3>Posiciones</h3><p id="subPos"></p><div class="scroll" id="tPos"></div></div>
-  <div class="panel"><h3>Órdenes</h3><p id="subOrd"></p><div class="scroll" id="tOrd"></div></div>
-  <div class="pie">Foto estática tomada al generar la página. Para actualizarla: <b>python sim/dashboard.py</b></div>
+  <div id="cuerpo">
+    <div class="kpis" id="kpis"></div>
+    <div class="panel"><h3>Saldo</h3><div class="ratios" id="ratios"></div></div>
+    <div class="panel"><h3>Posiciones</h3><p id="subPos"></p><div class="scroll" id="tPos"></div></div>
+    <div class="panel"><h3>Órdenes</h3><p id="subOrd"></p><div class="scroll" id="tOrd"></div></div>
+  </div>
+  <div class="panel error" id="error" hidden></div>
+  <div class="pie">Foto estática y de solo lectura, tomada al generar la página: desde aquí no se puede operar.
+    Para actualizarla: <b>python sim/dashboard.py</b></div>
 </div>
 
 <script>
@@ -99,6 +132,13 @@ const hora = iso => iso ? new Date(iso).toLocaleString('es-ES', {dateStyle:'shor
 // Codigos de la API. Los que no estan aqui se muestran sin color.
 const CLASE_ESTADO = {REJ:'mal', OUT:'mal', EXP:'mal', CAN:'mal', FLL:'sube', DON:'si', OPN:'si', ACK:'si', FLP:'si'};
 const ABIERTAS = new Set(['DON', 'OPN', 'ACK', 'FLP']);
+const BANDA = {
+  sim: 'SIMULACIÓN · DINERO FICTICIO',
+  real: '⚠ CUENTA REAL · DINERO REAL ⚠',
+};
+
+let modo = location.hash === '#real' ? 'real' : 'sim';
+const cuentaSel = {sim: 0, real: 0};
 
 function tabla(caja, columnas, filas) {
   if (!filas.length) { $(caja).innerHTML = '<div class="vacio">Ninguna</div>'; return; }
@@ -110,50 +150,84 @@ function tabla(caja, columnas, filas) {
   $(caja).innerHTML = `<table><thead><tr>${cab}</tr></thead><tbody>${cuerpo}</tbody></table>`;
 }
 
-const s = D.saldo, q = D.cotizacion;
-$('hEquity').textContent = f2(s.equity) + ' $';
-$('hCuenta').textContent = D.cuenta;
-$('at').textContent = hora(D.hora);
-$('boxPnl').innerHTML = `${esc(f2(s.pnl_hoy))} $<small>P&amp;L HOY</small>`;
+function mostrarError(texto) {
+  $('cuerpo').hidden = true;
+  $('error').hidden = false;
+  $('error').textContent = texto;
+  $('hEquity').textContent = '—';
+  $('boxPnl').innerHTML = '—<small>P&amp;L HOY</small>';
+}
 
-$('chips').innerHTML = [
-  `<span class="chip aviso"><b style="color:inherit">SIMULACIÓN</b> · dinero ficticio</span>`,
-  `<span class="chip">Tipo <b>${esc(D.tipo)}</b></span>`,
-  `<span class="chip">${esc(q.simbolo)} <b>${esc(f2(q.last))}</b> · Bid <b>${esc(f2(q.bid))}</b> · Ask <b>${esc(f2(q.ask))}</b></span>`,
-  `<span class="chip">Datos <b>${q.retrasado ? 'con retraso' : 'tiempo real'}</b> · último trade ${esc(hora(q.hora))}</span>`,
-].join('');
+function pintar() {
+  document.body.className = modo;
+  document.querySelectorAll('.switch button').forEach(b => {
+    b.classList.toggle('on', b.dataset.modo === modo);
+    b.setAttribute('aria-selected', b.dataset.modo === modo);
+  });
+  $('banda').textContent = BANDA[modo];
+  $('at').textContent = hora(D.hora);
 
-const kpi = (t, v, sub, clase = '') => `<div class="kpi"><div class="t">${esc(t)}</div><div class="n ${clase}">${esc(v)}</div><div class="s">${esc(sub)}</div></div>`;
-$('kpis').innerHTML = [
-  kpi('Efectivo', f0(s.efectivo), 'USD'),
-  kpi('Poder de compra', f0(s.poder_compra), 'incluye lo reservado por órdenes'),
-  kpi('Valor de posiciones', f0(s.valor_mercado), `${D.posiciones.length} posiciones`),
-  kpi('P&L no realizado', f2(s.pnl_no_realizado), 'USD', signo(s.pnl_no_realizado)),
-  kpi('Órdenes abiertas', D.ordenes.filter(o => ABIERTAS.has(o.codigo)).length, `${D.ordenes.length} en total`),
-].join('');
+  const M = D.modos[modo];
+  $('tabs').innerHTML = M.cuentas.map((c, i) =>
+    `<button data-i="${i}" class="${i === cuentaSel[modo] ? 'on' : ''}">${esc(c.cuenta)}<small>${esc(c.tipo || '')}</small></button>`).join('');
+  $('tabs').querySelectorAll('button').forEach(b => b.onclick = () => { cuentaSel[modo] = +b.dataset.i; pintar(); });
 
-$('ratios').innerHTML = [
-  ['Equity', f2(s.equity)], ['Efectivo', f2(s.efectivo)],
-  ['Poder de compra', f2(s.poder_compra)], ['Poder de compra opciones', f2(s.poder_opciones)],
-  ['Valor de mercado', f2(s.valor_mercado)], ['Margen requerido', f2(s.margen)],
-  ['P&L hoy', f2(s.pnl_hoy), signo(s.pnl_hoy)], ['P&L realizado', f2(s.pnl_realizado), signo(s.pnl_realizado)],
-  ['P&L no realizado', f2(s.pnl_no_realizado), signo(s.pnl_no_realizado)], ['Comisión', f2(s.comision)],
-  ['Day trades', f0(s.day_trades)],
-].map(([k, v, c]) => `<div class="ratio"><span>${esc(k)}</span><b class="${c || ''}">${esc(v)}</b></div>`).join('');
+  const q = M.cotizacion;
+  $('chips').innerHTML = q ? [
+    `<span class="chip">${esc(q.simbolo)} <b>${esc(f2(q.last))}</b> · Bid <b>${esc(f2(q.bid))}</b> · Ask <b>${esc(f2(q.ask))}</b></span>`,
+    `<span class="chip">Datos <b>${q.retrasado ? 'con retraso' : 'tiempo real'}</b> · último trade ${esc(hora(q.hora))}</span>`,
+  ].join('') : '';
 
-$('subPos').textContent = `${D.posiciones.length} abiertas`;
-tabla('tPos', [
-  {t:'Símbolo', v:p => p.simbolo}, {t:'Lado', v:p => p.lado}, {t:'Cantidad', v:p => p.cantidad},
-  {t:'Precio medio', v:p => f2(p.precio_medio)}, {t:'Último', v:p => f2(p.ultimo)}, {t:'Valor', v:p => f2(p.valor)},
-  {t:'P&L', v:p => f2(p.pnl), clase:p => signo(p.pnl)}, {t:'P&L %', v:p => f2(p.pnl_pct), clase:p => signo(p.pnl)},
-], D.posiciones);
+  if (M.error) return mostrarError(`No se pudo leer el modo ${modo.toUpperCase()}: ${M.error}`);
+  const C = M.cuentas[cuentaSel[modo]];
+  if (!C) return mostrarError('Ninguna cuenta en este modo.');
+  if (C.error) return mostrarError(`No se pudo leer la cuenta ${C.cuenta}: ${C.error}`);
+  $('cuerpo').hidden = false;
+  $('error').hidden = true;
 
-$('subOrd').textContent = 'De más reciente a más antigua.';
-tabla('tOrd', [
-  {t:'OrderID', v:o => o.id}, {t:'Abierta', v:o => hora(o.abierta)}, {t:'Símbolo', v:o => o.simbolo}, {t:'Lado', v:o => o.lado},
-  {t:'Cant.', v:o => o.cantidad}, {t:'Ejec.', v:o => o.ejecutado}, {t:'Tipo', v:o => o.tipo}, {t:'Límite', v:o => f2(o.limite)},
-  {t:'Vigencia', v:o => o.vigencia}, {t:'Precio ejec.', v:o => f2(o.precio_ejec)},
-  {t:'Estado', v:o => o.estado, clase:o => CLASE_ESTADO[o.codigo] || ''}, {t:'Motivo', v:o => o.motivo},
-], D.ordenes.slice().sort((a, b) => String(b.abierta).localeCompare(String(a.abierta))));
+  const s = C.saldo;
+  $('hEquity').textContent = f2(s.equity) + ' $';
+  $('boxPnl').innerHTML = `${esc(f2(s.pnl_hoy))} $<small>P&amp;L HOY</small>`;
+
+  const kpi = (t, v, sub, clase = '') => `<div class="kpi"><div class="t">${esc(t)}</div><div class="n ${clase}">${esc(v)}</div><div class="s">${esc(sub)}</div></div>`;
+  $('kpis').innerHTML = [
+    kpi('Efectivo', f0(s.efectivo), 'USD'),
+    kpi('Poder de compra', f0(s.poder_compra), 'incluye lo reservado por órdenes'),
+    kpi('Valor de posiciones', f0(s.valor_mercado), `${C.posiciones.length} posiciones`),
+    kpi('P&L no realizado', f2(s.pnl_no_realizado), 'USD', signo(s.pnl_no_realizado)),
+    kpi('Órdenes abiertas', C.ordenes.filter(o => ABIERTAS.has(o.codigo)).length, `${C.ordenes.length} en total`),
+  ].join('');
+
+  $('ratios').innerHTML = [
+    ['Equity', f2(s.equity)], ['Efectivo', f2(s.efectivo)],
+    ['Poder de compra', f2(s.poder_compra)], ['Poder de compra opciones', f2(s.poder_opciones)],
+    ['Valor de mercado', f2(s.valor_mercado)], ['Margen requerido', f2(s.margen)],
+    ['P&L hoy', f2(s.pnl_hoy), signo(s.pnl_hoy)], ['P&L realizado', f2(s.pnl_realizado), signo(s.pnl_realizado)],
+    ['P&L no realizado', f2(s.pnl_no_realizado), signo(s.pnl_no_realizado)], ['Comisión', f2(s.comision)],
+    ['Day trades', f0(s.day_trades)],
+  ].map(([k, v, c]) => `<div class="ratio"><span>${esc(k)}</span><b class="${c || ''}">${esc(v)}</b></div>`).join('');
+
+  $('subPos').textContent = `${C.posiciones.length} abiertas`;
+  tabla('tPos', [
+    {t:'Símbolo', v:p => p.simbolo}, {t:'Lado', v:p => p.lado}, {t:'Cantidad', v:p => p.cantidad},
+    {t:'Precio medio', v:p => f2(p.precio_medio)}, {t:'Último', v:p => f2(p.ultimo)}, {t:'Valor', v:p => f2(p.valor)},
+    {t:'P&L', v:p => f2(p.pnl), clase:p => signo(p.pnl)}, {t:'P&L %', v:p => f2(p.pnl_pct), clase:p => signo(p.pnl)},
+  ], C.posiciones);
+
+  $('subOrd').textContent = 'De más reciente a más antigua.';
+  tabla('tOrd', [
+    {t:'OrderID', v:o => o.id}, {t:'Abierta', v:o => hora(o.abierta)}, {t:'Símbolo', v:o => o.simbolo}, {t:'Lado', v:o => o.lado},
+    {t:'Cant.', v:o => o.cantidad}, {t:'Ejec.', v:o => o.ejecutado}, {t:'Tipo', v:o => o.tipo}, {t:'Límite', v:o => f2(o.limite)},
+    {t:'Vigencia', v:o => o.vigencia}, {t:'Precio ejec.', v:o => f2(o.precio_ejec)},
+    {t:'Estado', v:o => o.estado, clase:o => CLASE_ESTADO[o.codigo] || ''}, {t:'Motivo', v:o => o.motivo},
+  ], C.ordenes.slice().sort((a, b) => String(b.abierta).localeCompare(String(a.abierta))));
+}
+
+document.querySelectorAll('.switch button').forEach(b => b.onclick = () => {
+  modo = b.dataset.modo;
+  history.replaceState(null, '', modo === 'real' ? '#real' : '#');
+  pintar();
+});
+pintar();
 </script>
 </body></html>
