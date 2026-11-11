@@ -49,7 +49,7 @@ def main():
 
     if operar:
         precio = round(float(q["Bid"]) * 0.90, 2)
-        r = b.confirm(b.limit_order(SYMBOL, "BUY", 1, precio, "GTC"))
+        r = b.confirm(b.limit_order(SYMBOL, "BUY", 1, precio))
         check("Permiso de ordenes (orderconfirm, sin enviar)", r.ok, f"HTTP {r.status_code} {r.text[:300]}")
     else:
         print("[--] Permiso de ordenes: no comprobado (en REAL hace falta --confirmo <cuenta>)")

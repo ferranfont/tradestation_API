@@ -13,6 +13,9 @@ dos valen contra SIM y contra REAL. La separacion es por permisos:
   TS_TRADE_REFRESH_TOKEN  con Trade. Solo se carga con operar=True. Opera en SIM y en REAL.
 
 Operar en REAL exige ademas confirmo=<numero de cuenta>, escrito a mano.
+
+Vigencia: SIEMPRE DAY (se cancela sola al final del dia). Nunca GTC: una orden olvidada
+no puede quedar viva de un dia para otro. Fuera de horario TradeStation rechaza las DAY.
 """
 
 import os
@@ -150,11 +153,12 @@ class Broker:
         if order is not None and order["AccountID"] != self.account:
             raise ValueError(f"La orden es de {order['AccountID']!r} y el cliente de {self.account!r}.")
 
-    def limit_order(self, symbol: str, side: str, qty: int, price: float, tif: str = "DAY") -> dict:
+    def limit_order(self, symbol: str, side: str, qty: int, price: float) -> dict:
+        """Orden limitada, siempre DAY: nunca GTC."""
         return {
             "AccountID": self.account, "Symbol": symbol, "Quantity": str(qty),
             "OrderType": "Limit", "LimitPrice": f"{price:.2f}", "TradeAction": side,
-            "TimeInForce": {"Duration": tif}, "Route": "Intelligent",
+            "TimeInForce": {"Duration": "DAY"}, "Route": "Intelligent",
         }
 
     def confirm(self, order: dict) -> requests.Response:

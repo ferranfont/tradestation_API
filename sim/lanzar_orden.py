@@ -5,17 +5,16 @@ Por defecto compra 1 SPY un 10% por debajo del bid, valida solo hoy (DAY): queda
 abierta sin ejecutarse. Pide validacion (orderconfirm) antes de enviarla y luego
 lee el estado real de la orden en la cuenta.
 
-Fuera de horario (despues de las 16:00 ET) TradeStation rechaza las DAY: usa --tif GTC.
-Una GTC sigue abierta hasta que la canceles.
+Siempre DAY: si no se ejecuta, TradeStation la cancela al final del dia. Nunca GTC.
+Fuera de horario (despues de las 16:00 ET) TradeStation rechaza las DAY: lanzala con el mercado abierto.
 
 Uso:
     python sim/lanzar_orden.py                                # 1 SPY, -10%
     python sim/lanzar_orden.py --symbol AAPL --qty 2 --pct 5  # 2 AAPL, -5%
-    python sim/lanzar_orden.py --tif GTC                      # fuera de horario
     python sim/lanzar_orden.py --cancel 123456789             # cancelar por OrderID
 
 REAL (dinero real): hay que pedirlo y repetir el numero de cuenta:
-    python sim/lanzar_orden.py --real --confirmo 12083744 --tif GTC
+    python sim/lanzar_orden.py --real --confirmo 12083744
     python sim/lanzar_orden.py --real --confirmo 12083744 --cancel 123456789
 """
 
@@ -44,7 +43,6 @@ def main():
     ap.add_argument("--qty", type=int, default=1)
     ap.add_argument("--side", default="BUY", choices=["BUY", "SELL"])
     ap.add_argument("--pct", type=float, default=10.0, help="%% de distancia al bid (BUY) o al ask (SELL)")
-    ap.add_argument("--tif", default="DAY", help="vigencia: DAY, GTC...")
     ap.add_argument("--cancel", metavar="ORDER_ID", help="cancela esta orden y sale")
     args_modo(ap, operar=True)
     a = ap.parse_args()
@@ -62,9 +60,9 @@ def main():
         precio = float(q["Bid"]) * (1 - a.pct / 100)
     else:
         precio = float(q["Ask"]) * (1 + a.pct / 100)
-    orden = sim.limit_order(a.symbol, a.side, a.qty, precio, a.tif)
+    orden = sim.limit_order(a.symbol, a.side, a.qty, precio)
     print(f"[{sim.etiqueta}] {sim.account}: {a.side} {a.qty} {a.symbol} limite {orden['LimitPrice']} "
-          f"(Bid {q['Bid']} / Ask {q['Ask']}, {a.tif})")
+          f"(Bid {q['Bid']} / Ask {q['Ask']}, DAY)")
 
     r = sim.confirm(orden)
     if not r.ok:

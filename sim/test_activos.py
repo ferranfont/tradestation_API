@@ -2,7 +2,8 @@
 Comprueba si se puede operar cada tipo de activo en las cuentas SIM. Solo SIM.
 
 Por defecto solo valida (orderconfirm): no envia nada.
-Con --enviar manda de verdad cada orden, lejos del mercado, y la cancela al momento.
+Con --enviar manda de verdad cada orden (DAY), lejos del mercado, y la cancela al momento.
+Con --enviar, lanzalo con el mercado abierto: fuera de horario TradeStation rechaza las DAY.
 
 Uso:
     python sim/test_activos.py             # solo validar
@@ -59,7 +60,7 @@ def main():
 
     fallos = 0
     for nombre, sim, simbolo, accion, precio in casos():
-        orden = sim.limit_order(simbolo, accion, 1, precio, "GTC")
+        orden = sim.limit_order(simbolo, accion, 1, precio)
         print(f"{nombre}: {sim.account} {accion} 1 {simbolo} limite {orden['LimitPrice']}")
         r = sim.confirm(orden)
         print(f"  validar: HTTP {r.status_code} {'' if r.ok else r.text[:300]}")
